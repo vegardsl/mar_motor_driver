@@ -215,37 +215,6 @@ int16_t charToMotorSetting(uint8_t input, uint8_t val_sign)
 	return result;
 }
 
-/************************************************************************/
-/* Description: Speed commands from ROS are sent as an int32 which is 
-/* split into four chars. XMEGA A3BU uses int16_t. This function 
-/* performs the conversion from the four chars to int16_t.
-/* Assumes that ch1 is the most significant byte. 
-/*                                                                      */
-/************************************************************************/
-int16_t fourCharsToInt(uint8_t ch1, uint8_t ch2, uint8_t ch3, uint8_t ch4)
-{
-	
-	printf("Chars Before: %d %d %d %d \n\r",ch1,ch2,ch3,ch4);
-	
-	if ((ch1)&(1 << 7)) // Is MSB set? If so, the sign is negative.
-	{
-		printf("NEG\n");
-		// Bit 7 in ch3 is the new MSB. Set it to indicate negative sign.
-		ch4 |= 1 << 7; 
-	}
-	else
-	{ // Otherwise, make sure the new MSB is 0 to indicate positive sign.
-		printf("POS\n");
-		ch4 &= ~(1 << 7); 
-	}
-	int16_t result;
-	result = ( (ch3 << 8) | (ch4) & 0xff );
-	
-	printf("Chars AFTER: %d\n %d\n %d\n %d\n \n\r",ch1,ch2,ch3,ch4);
-	
-	return result;
-}
-
 /**
  * \brief main function
  */
