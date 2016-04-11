@@ -1,5 +1,4 @@
-src/stdio_usb_example.d src/stdio_usb_example.o: \
- ../src/stdio_usb_example.c ../src/asf/common/boards/board.h \
+src/main.d src/main.o: ../src/main.c ../src/asf/common/boards/board.h \
  ../src/asf/xmega/utils/compiler.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\io.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\sfr_defs.h \

@@ -3,7 +3,7 @@
  *
  * \brief USB configuration file for CDC application
  *
- * Copyright (c) 2009-2015 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2009-2012 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -23,7 +23,7 @@
  *    from this software without specific prior written permission.
  *
  * 4. This software may only be redistributed and used in connection with an
- *    Atmel microcontroller product.
+ *    Atmel micro controller product.
  *
  * THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -39,9 +39,6 @@
  *
  * \asf_license_stop
  *
- */
-/*
- * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
  */
 
 #ifndef _CONF_USB_H_
@@ -86,7 +83,7 @@
  * USB Device Callbacks definitions
  * @{
  */
-#define  UDC_VBUS_EVENT(b_vbus_high)
+#define  UDC_VBUS_EVENT(b_vbus_high)      stdio_usb_vbus_event(b_vbus_high)
 #define  UDC_SOF_EVENT()
 #define  UDC_SUSPEND_EVENT()
 #define  UDC_RESUME_EVENT()
@@ -107,7 +104,6 @@
 #define  UDI_CDC_ENABLE_EXT(port)          stdio_usb_enable()
 #define  UDI_CDC_DISABLE_EXT(port)         stdio_usb_disable()
 #define  UDI_CDC_RX_NOTIFY(port)
-#define  UDI_CDC_TX_EMPTY_NOTIFY(port)
 #define  UDI_CDC_SET_CODING_EXT(port,cfg)
 #define  UDI_CDC_SET_DTR_EXT(port,set)
 #define  UDI_CDC_SET_RTS_EXT(port,set)

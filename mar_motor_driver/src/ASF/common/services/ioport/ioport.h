@@ -4,7 +4,7 @@
  * \brief Common IOPORT service main header file for AVR, UC3 and ARM
  *        architectures.
  *
- * Copyright (c) 2012-2015 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2012 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -40,9 +40,6 @@
  *
  * \asf_license_stop
  *
- */
-/*
- * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
  */
 #ifndef IOPORT_H
 #define IOPORT_H
@@ -102,15 +99,6 @@ enum ioport_sense {
 	IOPORT_SENSE_FALLING,   /*!< IOPORT sense falling edges */
 	IOPORT_SENSE_RISING,    /*!< IOPORT sense rising edges */
 };
-#elif SAM && !SAM4L
-/** \brief IOPORT edge sense modes */
-enum ioport_sense {
-	IOPORT_SENSE_BOTHEDGES, /*!< IOPORT sense both rising and falling edges */
-	IOPORT_SENSE_FALLING,   /*!< IOPORT sense falling edges */
-	IOPORT_SENSE_RISING,    /*!< IOPORT sense rising edges */
-	IOPORT_SENSE_LEVEL_LOW, /*!< IOPORT sense low level  */
-	IOPORT_SENSE_LEVEL_HIGH,/*!< IOPORT sense High level  */
-};
 #else
 enum ioport_sense {
 	IOPORT_SENSE_BOTHEDGES, /*!< IOPORT sense both rising and falling edges */
@@ -132,8 +120,6 @@ enum ioport_sense {
 #elif SAM
 # if SAM4L
 #  include "sam/ioport_gpio.h"
-# elif (SAMD20 | SAMD21 | SAML21)
-#  include "sam0/ioport.h"
 # else
 #  include "sam/ioport_pio.h"
 # endif
@@ -413,24 +399,24 @@ static inline ioport_port_mask_t ioport_pin_to_mask(ioport_pin_t pin)
  *
  * \subsection ioport_quickstart_basic_setup_code Example code
  * \code
-	 #define MY_LED    IOPORT_CREATE_PIN(PORTA, 5)
-	 #define MY_BUTTON IOPORT_CREATE_PIN(PORTA, 6)
-
-	 ioport_init();
-
-	 ioport_set_pin_dir(MY_LED, IOPORT_DIR_OUTPUT);
-	 ioport_set_pin_dir(MY_BUTTON, IOPORT_DIR_INPUT);
-	 ioport_set_pin_mode(MY_BUTTON, IOPORT_MODE_PULLUP);
-\endcode
+ * #define MY_LED    IOPORT_CREATE_PIN(PORTA, 5)
+ * #define MY_BUTTON IOPORT_CREATE_PIN(PORTA, 6)
+ *
+ * ioport_init();
+ *
+ * ioport_set_pin_dir(MY_LED, IOPORT_DIR_OUTPUT);
+ * ioport_set_pin_dir(MY_BUTTON, IOPORT_DIR_INPUT);
+ * ioport_set_pin_mode(MY_BUTTON, IOPORT_MODE_PULLUP);
+ * \endcode
  *
  * \subsection ioport_quickstart_basic_setup_flow Workflow
  * -# It's useful to give the GPIOs symbolic names and this can be done with
  *    the \ref IOPORT_CREATE_PIN macro. We define one for a LED and one for a
  *    button.
  *   - \code
-	#define MY_LED    IOPORT_CREATE_PIN(PORTA, 5)
-	#define MY_BUTTON IOPORT_CREATE_PIN(PORTA, 6)
-\endcode
+ *     #define MY_LED    IOPORT_CREATE_PIN(PORTA, 5)
+ *     #define MY_BUTTON IOPORT_CREATE_PIN(PORTA, 6)
+ *     \endcode
  *   - \note The usefulness of the \ref IOPORT_CREATE_PIN macro and port names
  *           differ between architectures:
  *     - MEGA, MEGA_RF and XMEGA: Use \ref IOPORT_CREATE_PIN macro with port definitions
@@ -455,11 +441,11 @@ static inline ioport_port_mask_t ioport_pin_to_mask(ioport_pin_t pin)
  *
  * \subsection ioport_quickstart_basic_usage_code Example code
  * \code
-	 bool value;
-
-	 value = ioport_get_pin_level(MY_BUTTON);
-	 ioport_set_pin_level(MY_LED, value);
-\endcode
+ * bool value;
+ *
+ * value = ioport_get_pin_level(MY_BUTTON);
+ * ioport_set_pin_level(MY_LED, value);
+ * \endcode
  *
  * \subsection ioport_quickstart_basic_usage_flow Workflow
  * -# Define a boolean variable for state storage:
@@ -483,22 +469,22 @@ static inline ioport_port_mask_t ioport_pin_to_mask(ioport_pin_t pin)
  *
  * \subsection ioport_quickstart_use_case_1_setup_code Example code
  * \code
-	 #define IN_PORT  IOPORT_PORTA
-	 #define OUT_PORT IOPORT_PORTB
-	 #define MASK     0x00000060
-
-	 ioport_init();
-
-	 ioport_set_port_dir(IN_PORT, MASK, IOPORT_DIR_INPUT);
-	 ioport_set_port_dir(OUT_PORT, MASK, IOPORT_DIR_OUTPUT);
-\endcode
+ * #define IN_PORT  IOPORT_PORTA
+ * #define OUT_PORT IOPORT_PORTB
+ * #define MASK     0x00000060
+ *
+ * ioport_init();
+ *
+ * ioport_set_port_dir(IN_PORT, MASK, IOPORT_DIR_INPUT);
+ * ioport_set_port_dir(OUT_PORT, MASK, IOPORT_DIR_OUTPUT);
+ * \endcode
  *
  * \subsection ioport_quickstart_basic_setup_flow Workflow
  * -# It's useful to give the ports symbolic names:
  *   - \code
-	#define IN_PORT  IOPORT_PORTA
-	#define OUT_PORT IOPORT_PORTB
-\endcode
+ *     #define IN_PORT  IOPORT_PORTA
+ *     #define OUT_PORT IOPORT_PORTB
+ *     \endcode
  *   - \note The port names differ between architectures:
  *     - MEGA_RF, MEGA and XMEGA: There are predefined names for ports: IOPORT_PORTA,
  *              IOPORT_PORTB ...
@@ -519,11 +505,11 @@ static inline ioport_port_mask_t ioport_pin_to_mask(ioport_pin_t pin)
  *
  * \subsection ioport_quickstart_basic_usage_code Example code
  * \code
-	 ioport_port_mask_t value;
-
-	 value = ioport_get_port_level(IN_PORT, MASK);
-	 ioport_set_port_level(OUT_PORT, MASK, value);
-\endcode
+ * ioport_port_mask_t value;
+ *
+ * value = ioport_get_port_level(IN_PORT, MASK);
+ * ioport_set_port_level(OUT_PORT, MASK, value);
+ * \endcode
  *
  * \subsection ioport_quickstart_basic_usage_flow Workflow
  * -# Define a variable for port date storage:

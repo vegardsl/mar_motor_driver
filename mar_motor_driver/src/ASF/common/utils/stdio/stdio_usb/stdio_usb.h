@@ -6,7 +6,7 @@
  * This file defines a useful set of functions for the Stdio Serial
  * interface on AVR devices.
  *
- * Copyright (c) 2011-2015 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2011 - 2012 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -42,9 +42,6 @@
  *
  * \asf_license_stop
  *
- */
-/*
- * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
  */
 
 #ifndef _stdio_usb_h_
@@ -97,6 +94,14 @@ int stdio_usb_putchar (volatile void * usart, char data);
  * \return Nothing.
  */
 void stdio_usb_getchar (void volatile * usart, char * data);
+
+/*! \brief Callback for VBUS level change event.
+ *
+ * \param b_high  1 if VBus is present
+ *
+ * \return Nothing.
+ */
+void stdio_usb_vbus_event (bool b_high);
 
 /*! \brief Enables the stdio in USB Serial Mode.
  *

@@ -6,7 +6,7 @@
  * This file contains the USB definitions and data structures provided by the
  * USB 2.0 specification.
  *
- * Copyright (c) 2009-2015 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2009-2012 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -43,9 +43,6 @@
  * \asf_license_stop
  *
  */
-/*
- * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
- */
 
 #ifndef _USB_PROTOCOL_H_
 #define _USB_PROTOCOL_H_
@@ -64,7 +61,6 @@
 
 //! Value for field bcdUSB
 #define  USB_V2_0    0x0200 //!< USB Specification version 2.00
-#define  USB_V2_1    0x0201 //!< USB Specification version 2.01
 
 /*! \name Generic definitions (Class, subclass and protocol)
  */
@@ -207,50 +203,7 @@ enum usb_descriptor_type {
 	USB_DT_INTERFACE_POWER = 8,
 	USB_DT_OTG = 9,
 	USB_DT_IAD = 0x0B,
-	USB_DT_BOS = 0x0F,
-	USB_DT_DEVICE_CAPABILITY = 0x10,
 };
-
-/**
- * \brief USB Device Capability types
- */
-enum usb_capability_type {
-	USB_DC_USB20_EXTENSION = 0x02,
-};
-
-/**
- * \brief USB Device Capability - USB 2.0 Extension
- * To fill bmAttributes field of usb_capa_ext_desc_t structure.
- */
-enum usb_capability_extension_attr {
-	USB_DC_EXT_LPM  = 0x00000002,
-};
-
-#define HIRD_50_US    0
-#define HIRD_125_US   1
-#define HIRD_200_US   2
-#define HIRD_275_US   3
-#define HIRD_350_US   4
-#define HIRD_425_US   5
-#define HIRD_500_US   6
-#define HIRD_575_US  7
-#define HIRD_650_US  8
-#define HIRD_725_US  9
-#define HIRD_800_US  10
-#define HIRD_875_US  11
-#define HIRD_950_US  12
-#define HIRD_1025_US  13
-#define HIRD_1100_US  14
-#define HIRD_1175_US  15
-
-/** Fields definition from a LPM TOKEN  */
-#define  USB_LPM_ATTRIBUT_BLINKSTATE_MASK      (0xF << 0)
-#define  USB_LPM_ATTRIBUT_FIRD_MASK            (0xF << 4)
-#define  USB_LPM_ATTRIBUT_REMOTEWAKE_MASK      (1 << 8)
-#define  USB_LPM_ATTRIBUT_BLINKSTATE(value)    ((value & 0xF) << 0)
-#define  USB_LPM_ATTRIBUT_FIRD(value)          ((value & 0xF) << 4)
-#define  USB_LPM_ATTRIBUT_REMOTEWAKE(value)    ((value & 1) << 8)
-#define  USB_LPM_ATTRIBUT_BLINKSTATE_L1        USB_LPM_ATTRIBUT_BLINKSTATE(1)
 
 /**
  * \brief Standard USB endpoint transfer types
@@ -357,47 +310,6 @@ typedef struct {
 	uint8_t bReserved;
 } usb_dev_qual_desc_t;
 
-/**
- * \brief USB Device BOS descriptor structure
- *
- * The BOS descriptor (Binary device Object Store) defines a root
- * descriptor that is similar to the configuration descriptor, and is
- * the base descriptor for accessing a family of related descriptors.
- * A host can read a BOS descriptor and learn from the wTotalLength field
- * the entire size of the device-level descriptor set, or it can read in
- * the entire BOS descriptor set of device capabilities.
- * The host accesses this descriptor using the GetDescriptor() request.
- * The descriptor type in the GetDescriptor() request is set to BOS.
- */
-typedef struct {
-	uint8_t bLength;
-	uint8_t bDescriptorType;
-	le16_t  wTotalLength;
-	uint8_t bNumDeviceCaps;
-} usb_dev_bos_desc_t;
-
-
-/**
- * \brief USB Device Capabilities - USB 2.0 Extension Descriptor structure
- *
- * Defines the set of USB 1.1-specific device level capabilities.
- */
-typedef struct {
-	uint8_t bLength;
-	uint8_t bDescriptorType;
-	uint8_t bDevCapabilityType;
-	le32_t  bmAttributes;
-} usb_dev_capa_ext_desc_t;
-
-/**
- * \brief USB Device LPM Descriptor structure
- *
- * The BOS descriptor and capabilities descriptors for LPM.
- */
-typedef struct {
-	usb_dev_bos_desc_t bos;
-	usb_dev_capa_ext_desc_t capa_ext;
-} usb_dev_lpm_desc_t;
 
 /**
  * \brief Standard USB Interface Association Descriptor structure

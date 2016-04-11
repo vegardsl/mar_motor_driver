@@ -4,7 +4,7 @@
  * \brief System-specific implementation of the \ref _write function used by
  *         the standard library.
  *
- * Copyright (c) 2009-2015 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2009-2012 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -40,9 +40,6 @@
  *
  * \asf_license_stop
  *
- */
-/*
- * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
  */
 
 #include "compiler.h"
@@ -105,13 +102,15 @@ size_t __write(int handle, const unsigned char *buffer, size_t size)
 _STD_END
 
 
-#elif (defined(__GNUC__) && !XMEGA && !MEGA)
+#elif (defined(__GNUC__) && !XMEGA)
+
+int _write (int file, char * ptr, int len); // Remove GCC compiler warning
 
 int __attribute__((weak))
-_write (int file, const char *ptr, int len);
+_write (int file, char * ptr, int len);
 
 int __attribute__((weak))
-_write (int file, const char *ptr, int len)
+_write (int file, char * ptr, int len)
 {
 	int nChars = 0;
 
@@ -128,7 +127,7 @@ _write (int file, const char *ptr, int len)
 	return nChars;
 }
 
-#elif (defined(__GNUC__) && (XMEGA || MEGA))
+#elif (defined(__GNUC__) && XMEGA)
 
 int _write (char c, int *f);
 

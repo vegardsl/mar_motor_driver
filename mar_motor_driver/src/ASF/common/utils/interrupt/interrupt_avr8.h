@@ -3,7 +3,7 @@
  *
  * \brief Global interrupt management for 8-bit AVR
  *
- * Copyright (C) 2010-2015 Atmel Corporation. All rights reserved.
+ * Copyright (C) 2010-2012 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -40,9 +40,6 @@
  * \asf_license_stop
  *
  */
-/*
- * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
- */
 #ifndef UTILS_INTERRUPT_INTERRUPT_H
 #define UTILS_INTERRUPT_INTERRUPT_H
 
@@ -65,11 +62,11 @@
  *
  * Usage:
  * \code
-	ISR(FOO_vect)
-	{
-	    ...
-	}
-\endcode
+ * ISR(FOO_vect)
+ * {
+ *     ...
+ * }
+ * \endcode
  *
  * \param vect Interrupt vector name as found in the device header files.
  */
@@ -91,8 +88,6 @@
  */
 #define irq_initialize_vectors() \
 	PMIC.CTRL = PMIC_LOLVLEN_bm | PMIC_MEDLVLEN_bm | PMIC_HILVLEN_bm;
-#elif MEGA_RF
-#define irq_initialize_vectors()
 #endif
 
 #ifdef __GNUC__

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Atmel Studio Solution File, Format Version 11.00
 VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "mar_motor_driver", "Motor controll med timer\mar_motor_driver.cproj", "{9B09F14D-C680-4786-9A31-40C0849D0844}"
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "mar_motor_driver", "mar_motor_driver.cproj", "{9B09F14D-C680-4786-9A31-40C0849D0844}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

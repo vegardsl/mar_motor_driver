@@ -3,7 +3,7 @@
  *
  * \brief Chip-specific PLL management functions
  *
- * Copyright (c) 2010-2015 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2010-2012 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -39,9 +39,6 @@
  *
  * \asf_license_stop
  *
- */
-/*
- * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
  */
 #ifndef XMEGA_PLL_H_INCLUDED
 #define XMEGA_PLL_H_INCLUDED
@@ -220,15 +217,6 @@ static inline void pll_enable_source(enum pll_source src)
 		if (!osc_is_ready(OSC_ID_RC32MHZ)) {
 			osc_enable(OSC_ID_RC32MHZ);
 			osc_wait_ready(OSC_ID_RC32MHZ);
-#ifdef CONFIG_OSC_AUTOCAL_RC32MHZ_REF_OSC
-			if (CONFIG_OSC_AUTOCAL_RC32MHZ_REF_OSC
-					!= OSC_ID_USBSOF) {
-				osc_enable(CONFIG_OSC_AUTOCAL_RC32MHZ_REF_OSC);
-				osc_wait_ready(CONFIG_OSC_AUTOCAL_RC32MHZ_REF_OSC);
-			}
-			osc_enable_autocalibration(OSC_ID_RC32MHZ,
-					CONFIG_OSC_AUTOCAL_RC32MHZ_REF_OSC);
-#endif
 		}
 		break;
 

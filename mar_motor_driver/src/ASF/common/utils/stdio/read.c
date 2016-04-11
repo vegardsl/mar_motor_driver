@@ -4,7 +4,7 @@
  * \brief System-specific implementation of the \ref _read function used by
  *         the standard library.
  *
- * Copyright (c) 2009-2015 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2009-2012 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -40,9 +40,6 @@
  *
  * \asf_license_stop
  *
- */
-/*
- * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
  */
 
 #include "compiler.h"
@@ -126,7 +123,7 @@ long __lseek(int handle, long val, int val2)
 _STD_END
 
 // GCC AVR32 and SAM implementation
-#elif (defined(__GNUC__) && !XMEGA && !MEGA) 
+#elif (defined(__GNUC__) && !XMEGA)
 
 int __attribute__((weak))
 _read (int file, char * ptr, int len); // Remove GCC compiler warning
@@ -149,7 +146,7 @@ _read (int file, char * ptr, int len)
 }
 
 // GCC AVR implementation
-#elif (defined(__GNUC__) && (XMEGA || MEGA) )
+#elif (defined(__GNUC__) && XMEGA)
 
 int _read (int *f); // Remove GCC compiler warning
 

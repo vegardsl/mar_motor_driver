@@ -3,7 +3,7 @@
  *
  * \brief Common API for USB Device Drivers (UDD)
  *
- * Copyright (c) 2009-2015 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2009 - 2012 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -39,9 +39,6 @@
  *
  * \asf_license_stop
  *
- */
-/*
- * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
  */
 
 #ifndef _UDD_H_
@@ -87,7 +84,6 @@ typedef struct {
 	usb_setup_req_t req;
 
 	//! Point to buffer to send or fill with data following SETUP packet
-	//! This buffer must be word align for DATA IN phase (use prefix COMPILER_WORD_ALIGNED for buffer)
 	uint8_t *payload;
 
 	//! Size of buffer to send or fill, and content the number of byte transfered

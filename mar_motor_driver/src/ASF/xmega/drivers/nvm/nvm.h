@@ -3,7 +3,7 @@
  *
  * \brief Non Volatile Memory controller driver
  *
- * Copyright (c) 2010-2015 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2010-2012 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -39,9 +39,6 @@
  *
  * \asf_license_stop
  *
- */
-/*
- * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
  */
 #ifndef NVM_H
 #define NVM_H
@@ -461,19 +458,16 @@ void nvm_eeprom_erase_all(void);
 // 8K devices
 #  if AVR8_PART_IS_DEFINED(ATxmega8E5)
 #    define FLASH_SIZE      (8*1024L)
-#    define FLASH_PAGE_SIZE (128)
+#    define FLASH_PAGE_SIZE (256)
 
 // 16K devices
 #  elif AVR8_PART_IS_DEFINED(ATxmega16A4)            | \
 		AVR8_PART_IS_DEFINED(ATxmega16A4U) | \
 		AVR8_PART_IS_DEFINED(ATxmega16D4)  | \
-		AVR8_PART_IS_DEFINED(ATxmega16C4)
+		AVR8_PART_IS_DEFINED(ATxmega16C4)  | \
+		AVR8_PART_IS_DEFINED(ATxmega16E5)
 #    define FLASH_SIZE      (16*1024L)
 #    define FLASH_PAGE_SIZE (256)
-
-#  elif AVR8_PART_IS_DEFINED(ATxmega16E5)
-#    define FLASH_SIZE      (16*1024L)
-#    define FLASH_PAGE_SIZE (128)
 
 // 32K devices
 #  elif AVR8_PART_IS_DEFINED(ATxmega32A4)          | \
@@ -520,7 +514,6 @@ void nvm_eeprom_erase_all(void);
 
 // 192K devices
 #  elif AVR8_PART_IS_DEFINED(ATxmega192A3U) | \
-		AVR8_PART_IS_DEFINED(ATxmega192C3)  | \
 		AVR8_PART_IS_DEFINED(ATxmega192D3)
 #    define FLASH_SIZE      (192*1024L)
 #    define FLASH_PAGE_SIZE (512)
@@ -921,67 +914,67 @@ static inline void nvm_lb_lock_bits_write(enum NVM_LB_enum lb_lock)
  * \subsection nvm_quickstart_eeprom_case_example_code Example code
  *
  * \code
-	 #define EXAMPLE_PAGE 2
-	 #define EXAMPLE_ADDR EXAMPLE_PAGE * EEPROM_PAGE_SIZE
-
-	 uint8_t write_page[EEPROM_PAGE_SIZE];
-	 uint8_t read_page[EEPROM_PAGE_SIZE];
-
-	 fill_page_with_known_data(write_page);
-	 fill_page_with_zeroes(read_page);
-
-	 nvm_eeprom_load_page_to_buffer(write_page);
-	 nvm_eeprom_atomic_write_page(EXAMPLE_PAGE);
-
-	 nvm_eeprom_read_buffer(EXAMPLE_ADDR,
-	         read_page, EEPROM_PAGE_SIZE);
-
-	 check_if_pages_are_equal(write_page, read_page);
-\endcode
+ * #define EXAMPLE_PAGE 2
+ * #define EXAMPLE_ADDR EXAMPLE_PAGE * EEPROM_PAGE_SIZE
+ *
+ * uint8_t write_page[EEPROM_PAGE_SIZE];
+ * uint8_t read_page[EEPROM_PAGE_SIZE];
+ *
+ * fill_page_with_known_data(write_page);
+ * fill_page_with_zeroes(read_page);
+ *
+ * nvm_eeprom_load_page_to_buffer(write_page);
+ * nvm_eeprom_atomic_write_page(EXAMPLE_PAGE);
+ *
+ * nvm_eeprom_read_buffer(EXAMPLE_ADDR,
+ *         read_page, EEPROM_PAGE_SIZE);
+ *
+ * check_if_pages_are_equal(write_page, read_page);
+ * \endcode
  *
  * \subsection nvm_quickstart_eeprom_case_workflow Workflow
  *
  * -# We define where we would like to store our data, and we arbitrarily
  *    choose page 2 of EEPROM:
  *     - \code
-	#define EXAMPLE_PAGE 2
-	#define EXAMPLE_ADDR EXAMPLE_PAGE * EEPROM_PAGE_SIZE
-\endcode
+ *       #define EXAMPLE_PAGE 2
+ *       #define EXAMPLE_ADDR EXAMPLE_PAGE * EEPROM_PAGE_SIZE
+ *       \endcode
  * -# Define two tables, one which contains the data which we will write,
  *    and one which we will read the data into:
  *     - \code
-	uint8_t write_page[EEPROM_PAGE_SIZE];
-	uint8_t read_page[EEPROM_PAGE_SIZE];
-\endcode
+ *     uint8_t write_page[EEPROM_PAGE_SIZE];
+ *     uint8_t read_page[EEPROM_PAGE_SIZE];
+ *       \endcode
  * -# Fill the tables with our data, and zero out the read table:
  *     - \code
-	fill_page_with_known_data(write_page);
-	fill_page_with_zeroes(read_page);
-\endcode
+ *       fill_page_with_known_data(write_page);
+ *       fill_page_with_zeroes(read_page);
+ *       \endcode
  *     - \note These functions are undeclared, you should replace them with
  *             your own appropriate functions.
  * -# We load our page into a temporary EEPROM page buffer:
  *     - \code
-	nvm_eeprom_load_page_to_buffer(write_page);
-\endcode
+ *       nvm_eeprom_load_page_to_buffer(write_page);
+ *       \endcode
  *     - \attention The function used above will not work if memory mapping
  *                  is enabled.
  * -# Do an atomic write of the page from buffer into the specified page:
  *     - \code
-	nvm_eeprom_atomic_write_page(EXAMPLE_PAGE);
-\endcode
+ *       nvm_eeprom_atomic_write_page(EXAMPLE_PAGE);
+ *       \endcode
  *     - \note The function \ref nvm_eeprom_atomic_write_page() erases the
  *             page before writing the new one. For non-atomic (split)
  *             writing without deleting, see \ref nvm_eeprom_split_write_page()
  * -# Read the page back into our read_page[] table:
  *     - \code
-	nvm_eeprom_read_buffer(EXAMPLE_ADDR,
-	        read_page, EEPROM_PAGE_SIZE);
-\endcode
+ *       nvm_eeprom_read_buffer(EXAMPLE_ADDR,
+ *               read_page, EEPROM_PAGE_SIZE);
+ *       \endcode
  * -# Verify that the page is equal to the one that was written earlier:
  *     - \code
-	check_if_pages_are_equal(write_page, read_page);
-\endcode
+ *       check_if_pages_are_equal(write_page, read_page);
+ *       \endcode
  *     - \note This function is not declared, you should replace it with your
  *             own appropriate function.
  *
@@ -1000,33 +993,33 @@ static inline void nvm_lb_lock_bits_write(enum NVM_LB_enum lb_lock)
  *
  * \subsection nvm_quickstart_fuse_case_example_code Example code
  * \code
-	 uint8_t fuse_value;
-	 fuse_value = nvm_fuses_read(FUSEBYTE5);
-
-	 if ((fuse_value & NVM_FUSES_BODLVL_gm) == BODLVL_2V1_gc) {
-	     gpio_set_pin_low(LED0_GPIO);
-	 }
-\endcode
+ * uint8_t fuse_value;
+ * fuse_value = nvm_fuses_read(FUSEBYTE5);
+ *
+ * if ((fuse_value & NVM_FUSES_BODLVL_gm) == BODLVL_2V1_gc) {
+ *     gpio_set_pin_low(LED0_GPIO);
+ * }
+ * \endcode
  *
  * \subsection nvm_quickstart_fuse_case_workflow Workflow
  *
  * -# Create a variable to store the fuse contents:
  *     - \code
-	uint8_t fuse_value;
-\endcode
+ *       uint8_t fuse_value;
+ *       \endcode
  * -# The fuse value we are interested in, BODLVL, is stored in FUSEBYTE5.
  *    We call the function \ref nvm_fuses_read() to read the fuse into our
  *    variable:
  *     - \code
-	fuse_value = nvm_fuses_read(FUSEBYTE5);
-\endcode
+ *       fuse_value = nvm_fuses_read(FUSEBYTE5);
+ *       \endcode
  * -# This ends the reading portion, but we would like to see whether the
  *    BOD-level is correct, and if it is, light up an LED:
  *     - \code
-	if ((fuse_value & NVM_FUSES_BODLVL_gm) == BODLVL_2V1_gc) {
-	    gpio_set_pin_low(LED0_GPIO);
-	}
-\endcode
+ *       if ((fuse_value & NVM_FUSES_BODLVL_gm) == BODLVL_2V1_gc) {
+ *           gpio_set_pin_low(LED0_GPIO);
+ *       }
+ *       \endcode
  *
  * \section xmega_nvm_quickstart_signature_case Use case 3: Signature row
  *
@@ -1040,34 +1033,34 @@ static inline void nvm_lb_lock_bits_write(enum NVM_LB_enum lb_lock)
  * \subsection xmega_nvm_quickstart_signature_row_example_code Example code
  *
  * \code
-	 #define START_ADDR 0x10
-	 #define DATA_LENGTH 16
-
-	 uint8_t values[LENGTH];
-	 uint8_t i;
-
-	 for (i = 0; i < DATA_LENGTH; i++) {
-	     values[i] = nvm_read_user_signature_row(START_ADDR + i);
-	 }
-\endcode
+ * #define START_ADDR 0x10
+ * #define DATA_LENGTH 16
+ *
+ * uint8_t values[LENGTH];
+ * uint8_t i;
+ *
+ * for (i = 0; i < DATA_LENGTH; i++) {
+ *     values[i] = nvm_read_user_signature_row(START_ADDR + i);
+ * }
+ * \endcode
  *
  * \subsection nvm_quickstart_signature_case_workflow Workflow
  *
  * -# Define starting address and length of data segment, and create
  *    variables needed to store and process the data:
  *     - \code
-	       #define START_ADDR 0x10
-	       #define DATA_LENGTH 16
-
-	       uint8_t values[LENGTH];
-	       uint8_t i;
-\endcode
+ *       #define START_ADDR 0x10
+ *       #define DATA_LENGTH 16
+ *
+ *       uint8_t values[LENGTH];
+ *       uint8_t i;
+ *       \endcode
  * -# Iterate through the user signature row, and store our desired data:
  *     - \code
-	for (i = 0; i < DATA_LENGTH; i++) {
-	    values[i] = nvm_read_user_signature_row(START_ADDR + i);
-	}
-\endcode
+ *       for (i = 0; i < DATA_LENGTH; i++) {
+ *           values[i] = nvm_read_user_signature_row(START_ADDR + i);
+ *       }
+ *       \endcode
  *
  */
 

@@ -3,7 +3,7 @@
  *
  * \brief Common API for USB Device Interface
  *
- * Copyright (c) 2009-2015 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2009 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -39,9 +39,6 @@
  *
  * \asf_license_stop
  *
- */
-/*
- * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
  */
 
 #ifndef _UDC_DESC_H_
@@ -121,7 +118,6 @@ typedef struct {
 	//! USB configuration descriptor and UDI API pointers for high speed
 	udc_config_speed_t UDC_DESC_STORAGE *conf_hs;
 #endif
-	usb_dev_bos_desc_t UDC_DESC_STORAGE *conf_bos;
 } udc_config_t;
 
 //! Global variables of USB Device Descriptor and UDI links

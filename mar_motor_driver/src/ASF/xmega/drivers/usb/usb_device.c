@@ -4,7 +4,7 @@
  * \brief USB Device driver
  * Compliance with common driver UDD
  *
- * Copyright (c) 2011-2016 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2011 - 2012 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -40,9 +40,6 @@
  *
  * \asf_license_stop
  *
- */
-/*
- * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
  */
 
 #include "conf_usb.h"
@@ -476,11 +473,6 @@ void udd_enable(void)
 	udd_set_nb_max_ep(USB_DEVICE_MAX_EP);
 	udd_enable_interface();
 	udd_enable_store_frame_number();
-#if XMEGA_A1U
-	Assert(((uint16_t)(&udd_sram) & 0x0F) == 0); /* check align on 16bit */
-#else
-	Assert(((uint16_t)(&udd_sram) & 0x01) == 0); /* check align on WORD */
-#endif
 	udd_set_ep_table_addr(udd_sram.ep_ctrl);
 	// Enable TC fifo management
 	udd_enable_fifo();
@@ -494,9 +486,6 @@ void udd_enable(void)
 	sleepmgr_lock_mode(USBC_SLEEP_MODE_USB_SUSPEND);
 #endif
 
-#ifndef USB_DEVICE_ATTACH_AUTO_DISABLE
-	udd_attach();
-#endif
 	cpu_irq_restore(flags);
 }
 
@@ -641,6 +630,7 @@ bool udd_ep_set_halt(udd_ep_id_t ep)
 
 	ep_ctrl = udd_ep_get_ctrl(ep);
 	udd_endpoint_enable_stall(ep_ctrl);
+	udd_endpoint_clear_dtgl(ep_ctrl);
 
 	udd_ep_abort(ep);
 	return true;
@@ -653,7 +643,6 @@ bool udd_ep_clear_halt(udd_ep_id_t ep)
 	Assert(udd_ep_is_valid(ep));
 
 	ep_ctrl = udd_ep_get_ctrl(ep);
-	udd_endpoint_clear_dtgl(ep_ctrl);
 	if (!udd_endpoint_is_stall(ep_ctrl)) {
 		return true; // No stall on going
 	}
@@ -950,7 +939,7 @@ static void udd_ep_init(udd_ep_id_t ep, uint8_t bmAttributes,
 		break;
 	default:
 		Assert(false); // Wrong value
-		return;
+		break;
 	}
 #else
 	type = USB_EP_TYPE_CONTROL_gc;

@@ -3,7 +3,7 @@
  *
  * \brief Sleep manager
  *
- * Copyright (c) 2010-2015 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2010-2012 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -40,37 +40,23 @@
  * \asf_license_stop
  *
  */
-/*
- * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
- */
 #ifndef SLEEPMGR_H
 #define SLEEPMGR_H
 
 #include <compiler.h>
+#include <sleep.h>
 #include <parts.h>
 
-#if (SAM3S || SAM3U || SAM3N || SAM3XA || SAM4S || SAM4E || SAM4N || SAM4C || SAMG || SAM4CP || SAM4CM || SAMV71 || SAMV70 || SAMS70 || SAME70)
+#if (SAM3S || SAM3U || SAM3N || SAM3XA || SAM4S)
 # include "sam/sleepmgr.h"
 #elif XMEGA
 # include "xmega/sleepmgr.h"
-#elif UC3
+#elif (defined(__GNUC__) && defined(__AVR32__)) || (defined(__ICCAVR32__) || defined(__AAVR32__))
 # include "uc3/sleepmgr.h"
 #elif SAM4L
 # include "sam4l/sleepmgr.h"
-#elif MEGA
-# include "mega/sleepmgr.h"
-#elif (SAMD20 || SAMD21 || SAMR21 || SAMD11 || SAMDA1)
-# include "samd/sleepmgr.h"
-#elif (SAML21 || SAML22)
-# include "saml/sleepmgr.h"
-#elif (SAMC21)
-# include "samc/sleepmgr.h"
 #else
 # error Unsupported device.
-#endif
-
-#ifdef __cplusplus
-extern "C" {
 #endif
 
 /**
@@ -149,12 +135,7 @@ static inline void sleepmgr_lock_mode(enum sleepmgr_mode mode)
 #ifdef CONFIG_SLEEPMGR_ENABLE
 	irqflags_t flags;
 
-	if(sleepmgr_locks[mode] >= 0xff) {
-		while (true) {
-			// Warning: maximum value of sleepmgr_locks buffer is no more than 255.
-			// Check APP or change the data type to uint16_t.
-		}
-	}
+	Assert(sleepmgr_locks[mode] < 0xff);
 
 	// Enter a critical section
 	flags = cpu_irq_save();
@@ -163,8 +144,6 @@ static inline void sleepmgr_lock_mode(enum sleepmgr_mode mode)
 
 	// Leave the critical section
 	cpu_irq_restore(flags);
-#else
-	UNUSED(mode);
 #endif /* CONFIG_SLEEPMGR_ENABLE */
 }
 
@@ -181,12 +160,7 @@ static inline void sleepmgr_unlock_mode(enum sleepmgr_mode mode)
 #ifdef CONFIG_SLEEPMGR_ENABLE
 	irqflags_t flags;
 
-	if(sleepmgr_locks[mode] == 0) {
-		while (true) {
-			// Warning: minimum value of sleepmgr_locks buffer is no less than 0.
-			// Check APP.
-		}
-	}
+	Assert(sleepmgr_locks[mode]);
 
 	// Enter a critical section
 	flags = cpu_irq_save();
@@ -195,8 +169,6 @@ static inline void sleepmgr_unlock_mode(enum sleepmgr_mode mode)
 
 	// Leave the critical section
 	cpu_irq_restore(flags);
-#else
-	UNUSED(mode);
 #endif /* CONFIG_SLEEPMGR_ENABLE */
 }
 
@@ -217,7 +189,7 @@ static inline enum sleepmgr_mode sleepmgr_get_sleep_mode(void)
 	// Find first non-zero lock count, starting with the shallowest modes.
 	while (!(*lock_ptr)) {
 		lock_ptr++;
-		sleep_mode = (enum sleepmgr_mode)(sleep_mode + 1);
+		sleep_mode++;
 	}
 
 	// Catch the case where one too many sleepmgr_unlock_mode() call has been
@@ -265,9 +237,5 @@ static inline void sleepmgr_enter_sleep(void)
 
 
 //! @}
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* SLEEPMGR_H */
