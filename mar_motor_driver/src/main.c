@@ -96,9 +96,12 @@ enum Sign
 const int16_t wheel_radius = 5; // 5 cm
 const int16_t diff_shaft_len = 44; // 44 cm
 
-enum Receiver_State rx_state;
+enum Receiver_State f_rx_state;
 
 bool time_out = false;
+
+int16_t f_linear_speed_setting = 0;
+int16_t f_angular_speed_setting = 0;
 
 void init_pwm_motor_driver()
 {
@@ -223,19 +226,6 @@ int16_t charToMotorSetting(uint8_t input, uint8_t val_sign)
 	printf("%d\n",result);
 	return result;
 }
-
-/**
- * \brief Timer Counter Overflow interrupt callback function
- *
- * This function is called when an overflow interrupt has occurred on
- * TIMER_EXAMPLE and toggles LED0.
- */
-static void ovf_interrupt_callback(void)
-{
-	gpio_toggle_pin(LED0_GPIO);
-	rx_state = stop;
-	time_out = true;
-}
 	
 void setSpeed(int16_t linear_speed_setting, int16_t angular_speed_setting)
 {
@@ -247,17 +237,80 @@ void setSpeed(int16_t linear_speed_setting, int16_t angular_speed_setting)
 	right_set_wheel_speed(right_speed_setting);
 }
 
-void rampDown(int16_t linear_speed_setting)
-{
-	int16_t angular_speed_setting = 0;
-	
-	while (linear_speed_setting > 20)
+void rampDown(int16_t curr_lin_spd, int16_t new_lin_spd,
+			int16_t curr_ang_spd, int16_t new_ang_spd)
+{	
+	while (new_lin_spd < (curr_lin_spd - 5) || new_ang_spd < (curr_ang_spd - 5))
 	{
+		if (new_lin_spd < curr_lin_spd)
+		{
+			curr_lin_spd -= 3;
+		}
+		if (new_ang_spd < curr_ang_spd)
+		{
+			curr_ang_spd -= 3;
+		}
+		setSpeed(curr_lin_spd,curr_ang_spd);
+		delay_ms(250);
+		tc_restart(&TCC1);
+	}
+	setSpeed(new_lin_spd,new_ang_spd);
+}
+
+void rampUp(int16_t curr_lin_spd, int16_t new_lin_spd, 
+			int16_t curr_ang_spd, int16_t new_ang_spd)
+{
+	
+	while (new_lin_spd > (curr_lin_spd + 5) || new_ang_spd > (curr_ang_spd + 5))
+	{
+		gpio_toggle_pin(LED2_GPIO);
 		delay_ms(100);
-		linear_speed_setting -= 10;
-		setSpeed(linear_speed_setting,angular_speed_setting);
+		
+		if (new_lin_spd > (curr_lin_spd + 5))
+		{
+			curr_lin_spd += 3;
+		}
+		if (new_ang_spd > (curr_ang_spd + 5))
+		{
+			curr_ang_spd += 3;
+		}
+		setSpeed(curr_lin_spd,curr_ang_spd);
+		tc_restart(&TCC1);
+	}
+	setSpeed(new_lin_spd,new_ang_spd);
+}
+
+/**
+ * \brief Timer Counter Overflow interrupt callback function
+ *
+ * This function is called when an overflow interrupt has occurred on
+ * TIMER_EXAMPLE and toggles LED0.
+ */
+static void ovf_interrupt_callback(void)
+{
+	gpio_toggle_pin(LED0_GPIO);
+	f_rx_state = idle;
+	//time_out = true;
+	//rampDown(f_linear_speed_setting,0,f_angular_speed_setting,0);
+	
+	while (0 < (f_linear_speed_setting - 3) || 0 < (f_angular_speed_setting - 3))
+	{
+		if (0 < f_linear_speed_setting)
+		{
+			f_linear_speed_setting -= 5;
+		}
+		if (0 < f_angular_speed_setting)
+		{
+			f_angular_speed_setting -= 5;
+		}
+		setSpeed(f_linear_speed_setting,f_angular_speed_setting);
+		delay_ms(100);
+		tc_restart(&TCC1);
 	}
 	setSpeed(0,0);
+	
+	f_linear_speed_setting = 0;
+	f_angular_speed_setting = 0;
 }
 	
 /**
@@ -265,6 +318,16 @@ void rampDown(int16_t linear_speed_setting)
  */
 int main (void)
 {
+	uint8_t ch;
+		
+	int16_t left_speed_setting = 0;
+	int16_t right_speed_setting = 0;
+				
+	int16_t new_linear_speed_setting = 0;
+	int16_t new_angular_speed_setting = 0;
+		
+		//uint8_t velocity_command[4];
+	
 	/* Initialize basic board support features.
 	 * - Initialize system clock sources according to device-specific
 	 *   configuration parameters supplied in a conf_clock.h file.
@@ -285,33 +348,32 @@ int main (void)
 	 * supplied to configure the USB device correctly.
 	 */
 	
-		/*
+	/*
 	* Unmask clock for TIMER_EXAMPLE
 	*/
-	//tc_enable(&TCC1);
+	tc_enable(&TCC1);
 	/*
 	* Configure interrupt callback function for TIMER_TIMEOUT
 	* overflow interrupt
 	*/
-	//tc_set_overflow_interrupt_callback(&TCC1,
-	//		ovf_interrupt_callback);
+	tc_set_overflow_interrupt_callback(&TCC1,
+			ovf_interrupt_callback);
 			
 	/*
 	* Configure TC in normal mode, configure period, CCA and CCB
 	* Enable both CCA and CCB channels
 	*/
-
-	//tc_set_wgm(&TCC1, TC_WG_NORMAL);
+	tc_set_wgm(&TCC1, TC_WG_NORMAL);
 
 	/*
 	* Enable TC interrupts (overflow, CCA and CCB)
 	*/
-	//tc_set_overflow_interrupt_level(&TCC1, TC_INT_LVL_LO);
+	tc_set_overflow_interrupt_level(&TCC1, TC_INT_LVL_LO);
 
 	/*
 	* Run TIMER_EXAMPLE at TIMER_EXAMPLE_PERIOD(31250Hz) resolution
 	*/
-	//tc_set_resolution(&TCC1, TIMER_EXAMPLE_PERIOD);
+	tc_set_resolution(&TCC1, TIMER_EXAMPLE_PERIOD);
 
 		
 	stdio_usb_init();
@@ -319,23 +381,13 @@ int main (void)
 	init_pwm_motor_driver();
 	left_set_wheel_speed(0);
 	right_set_wheel_speed(0);
-
-	uint8_t ch;
-		
-	int16_t left_speed_setting = 0;
-	int16_t right_speed_setting = 0;
-	
-	int16_t linear_speed_setting = 0;
-	int16_t angular_speed_setting = 0;
-	
-	uint8_t velocity_command[4];
 	
 	//wdt_set_timeout_period(WDT_TIMEOUT_PERIOD_250CLK);
 	//wdt_enable(); //enable watchdog
 	
 	ioport_set_pin_low(LED3_GPIO);
 	
-	rx_state = idle;
+	f_rx_state = idle;
 	
 	while (true) {
 		/* The state machine below handles incoming commands via the serial port. 
@@ -350,7 +402,7 @@ int main (void)
 		* - ANGULAR SPEED: Speed setting, a 0 to 127 value.
 		* - END OF MESSAGE: ascii value for "ESC"
 		*/
-		switch(rx_state){
+		switch(f_rx_state){
 			case receiving:
 				printf("Receiving.\n\r");
 				scanf("%c",&ch);
@@ -366,7 +418,7 @@ int main (void)
 					scanf("%c",&new_setting);
 					printf("Echo: %c\n",new_setting); // echo to output
 
-					linear_speed_setting = charToMotorSetting(new_setting, val_sign);
+					f_linear_speed_setting = charToMotorSetting(new_setting, val_sign);
 					printf("%d\n",result); // echo to output
 				}
 				else if (ch == 97) // if "a"
@@ -379,11 +431,11 @@ int main (void)
 					scanf("%c",&new_setting);
 
 					
-					angular_speed_setting = charToMotorSetting(new_setting, val_sign);
+					f_angular_speed_setting = charToMotorSetting(new_setting, val_sign);
 				}
 				else if (ch == 27) //if "Escape"
 				{
-					rx_state = after_message;
+					f_rx_state = after_message;
 				}
 				break;
 				
@@ -399,11 +451,15 @@ int main (void)
 				left_set_wheel_speed(left_speed_setting);
 				right_set_wheel_speed(right_speed_setting);
 				*/
-				setSpeed(linear_speed_setting,angular_speed_setting);
-				rx_state = idle;
+								
+				//rampUp(f_linear_speed_setting, new_linear_speed_setting, f_angular_speed_setting, new_angular_speed_setting);
+				//rampDown(f_linear_speed_setting, new_linear_speed_setting, f_angular_speed_setting, new_angular_speed_setting);
+				
+				setSpeed(f_linear_speed_setting, f_angular_speed_setting);
+				f_rx_state = idle;
 				printf("e\n\r"); // Confirm out of receive mode. 
 				
-				//tc_restart(&TCC1);
+				tc_restart(&TCC1);
 				break;
 				
 			case idle:
@@ -412,7 +468,7 @@ int main (void)
 				//printf("Echo: %c\n\r",ch); // echo to output
 				if (ch == 58) { // if ":"
 					printf("r\n\r"); // Confirm in receive mode
-					rx_state = receiving;
+					f_rx_state = receiving;
 				}		
 				wdt_reset();		
 				/*
@@ -427,10 +483,11 @@ int main (void)
 		/*
 		if (time_out)
 		{
+			printf("TIMEOUT\n\r"); // Confirm in receive mode
 			tc_disable(&TCC1);
 			rampDown(linear_speed_setting);
 			gpio_toggle_pin(LED1_GPIO);
-			rx_state = idle;
+			f_rx_state = idle;
 			time_out = false;
 			tc_enable(&TCC1);
 		}
