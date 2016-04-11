@@ -67,19 +67,24 @@
  * <A href="http://www.atmel.com/avr">Atmel AVR</A>.\n
  */
 
-#include <board.h>
-#include <sysclk.h>
-#include <stdio_usb.h>
-#include "avr/wdt.h"
-#include "ioport.h"
+//#include <board.h>
+//#include <sysclk.h>
+//#include <stdio_usb.h>
+//#include "avr/wdt.h"
+//#include "wdt.h"
+//#include "ioport.h"
 #include "compiler.h"
 #include "preprocessor.h"
+
+#include "asf.h"
+#include "conf_timeout.h"
 
 enum Receiver_State
 {
 	idle=0,
 	after_message,
-	receiving
+	receiving,
+	stop
 };
 
 enum Sign
@@ -90,6 +95,10 @@ enum Sign
 
 const int16_t wheel_radius = 5; // 5 cm
 const int16_t diff_shaft_len = 44; // 44 cm
+
+enum Receiver_State rx_state;
+
+bool time_out = false;
 
 void init_pwm_motor_driver()
 {
@@ -216,6 +225,42 @@ int16_t charToMotorSetting(uint8_t input, uint8_t val_sign)
 }
 
 /**
+ * \brief Timer Counter Overflow interrupt callback function
+ *
+ * This function is called when an overflow interrupt has occurred on
+ * TIMER_EXAMPLE and toggles LED0.
+ */
+static void ovf_interrupt_callback(void)
+{
+	gpio_toggle_pin(LED0_GPIO);
+	rx_state = stop;
+	time_out = true;
+}
+	
+void setSpeed(int16_t linear_speed_setting, int16_t angular_speed_setting)
+{
+	int16_t left_speed_setting = calculate_left_wheel_speed(linear_speed_setting,
+	angular_speed_setting);
+	int16_t right_speed_setting = calculate_right_wheel_speed(linear_speed_setting,
+	angular_speed_setting);
+	left_set_wheel_speed(left_speed_setting);
+	right_set_wheel_speed(right_speed_setting);
+}
+
+void rampDown(int16_t linear_speed_setting)
+{
+	int16_t angular_speed_setting = 0;
+	
+	while (linear_speed_setting > 20)
+	{
+		delay_ms(100);
+		linear_speed_setting -= 10;
+		setSpeed(linear_speed_setting,angular_speed_setting);
+	}
+	setSpeed(0,0);
+}
+	
+/**
  * \brief main function
  */
 int main (void)
@@ -239,6 +284,35 @@ int main (void)
 	 * a USB CDC protocol. Tunable parameters in a conf_usb.h file must be
 	 * supplied to configure the USB device correctly.
 	 */
+	
+		/*
+	* Unmask clock for TIMER_EXAMPLE
+	*/
+	//tc_enable(&TCC1);
+	/*
+	* Configure interrupt callback function for TIMER_TIMEOUT
+	* overflow interrupt
+	*/
+	//tc_set_overflow_interrupt_callback(&TCC1,
+	//		ovf_interrupt_callback);
+			
+	/*
+	* Configure TC in normal mode, configure period, CCA and CCB
+	* Enable both CCA and CCB channels
+	*/
+
+	//tc_set_wgm(&TCC1, TC_WG_NORMAL);
+
+	/*
+	* Enable TC interrupts (overflow, CCA and CCB)
+	*/
+	//tc_set_overflow_interrupt_level(&TCC1, TC_INT_LVL_LO);
+
+	/*
+	* Run TIMER_EXAMPLE at TIMER_EXAMPLE_PERIOD(31250Hz) resolution
+	*/
+	//tc_set_resolution(&TCC1, TIMER_EXAMPLE_PERIOD);
+
 		
 	stdio_usb_init();
 
@@ -247,9 +321,7 @@ int main (void)
 	right_set_wheel_speed(0);
 
 	uint8_t ch;
-	
-	enum Receiver_State rx_state = idle;
-	
+		
 	int16_t left_speed_setting = 0;
 	int16_t right_speed_setting = 0;
 	
@@ -258,7 +330,13 @@ int main (void)
 	
 	uint8_t velocity_command[4];
 	
-
+	//wdt_set_timeout_period(WDT_TIMEOUT_PERIOD_250CLK);
+	//wdt_enable(); //enable watchdog
+	
+	ioport_set_pin_low(LED3_GPIO);
+	
+	rx_state = idle;
+	
 	while (true) {
 		/* The state machine below handles incoming commands via the serial port. 
 		* Messages are received and read one char at the time. The message 
@@ -313,14 +391,19 @@ int main (void)
 				printf("After Message.\n\r");
 				// Reset watchdog here.
 				// Update commands here.
+				/*
 				left_speed_setting = calculate_left_wheel_speed(linear_speed_setting, 
 																angular_speed_setting);
 				right_speed_setting = calculate_right_wheel_speed(linear_speed_setting,
 																angular_speed_setting);
 				left_set_wheel_speed(left_speed_setting);
 				right_set_wheel_speed(right_speed_setting);
+				*/
+				setSpeed(linear_speed_setting,angular_speed_setting);
 				rx_state = idle;
 				printf("e\n\r"); // Confirm out of receive mode. 
+				
+				//tc_restart(&TCC1);
 				break;
 				
 			case idle:
@@ -330,8 +413,27 @@ int main (void)
 				if (ch == 58) { // if ":"
 					printf("r\n\r"); // Confirm in receive mode
 					rx_state = receiving;
-				}
-				//break;
+				}		
+				wdt_reset();		
+				/*
+			case stop:
+				tc_disable(&TCC1);
+				rampDown(linear_speed_setting);
+				gpio_toggle_pin(LED1_GPIO);
+				rx_state = idle;
+				tc_enable(&TCC1);
+				*/
 		}
+		/*
+		if (time_out)
+		{
+			tc_disable(&TCC1);
+			rampDown(linear_speed_setting);
+			gpio_toggle_pin(LED1_GPIO);
+			rx_state = idle;
+			time_out = false;
+			tc_enable(&TCC1);
+		}
+		*/
 	}
 }
