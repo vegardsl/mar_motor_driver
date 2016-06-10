@@ -163,7 +163,7 @@ uint16_t speedToMotorSetting(uint16_t speed)
 	{
 		return 0;	// This will prevent an invalid negative number in the unsigned int.
 	}
-	//motorSetting = ( (1250*speed) - 75)/100; // This will overflow when speen exeeds 40;
+	//motorSetting = ( (1250*speed) - 75)/100; // This will overflow when speed exeeds 40;
 	motorSetting = (125*speed - 7)/10; // An approximation to the above, to prevent overflow;
 	
 	printf("motorSetting: %d\n\r",motorSetting);
@@ -284,7 +284,7 @@ void rampUp(int16_t curr_lin_spd, int16_t new_lin_spd,
  * \brief Timer Counter Overflow interrupt callback function
  *
  * This function is called when an overflow interrupt has occurred on
- * TIMER_EXAMPLE and toggles LED0.
+ * TCC1 and toggles LED0.
  */
 static void ovf_interrupt_callback(void)
 {
@@ -293,6 +293,7 @@ static void ovf_interrupt_callback(void)
 	//time_out = true;
 	//rampDown(f_linear_speed_setting,0,f_angular_speed_setting,0);
 	
+	// Ramp down
 	while (0 < (f_linear_speed_setting - 3) || 0 < (f_angular_speed_setting - 3))
 	{
 		if (0 < f_linear_speed_setting)
@@ -305,12 +306,14 @@ static void ovf_interrupt_callback(void)
 		}
 		setSpeed(f_linear_speed_setting,f_angular_speed_setting);
 		delay_ms(100);
-		tc_restart(&TCC1);
+		
 	}
 	setSpeed(0,0);
 	
 	f_linear_speed_setting = 0;
 	f_angular_speed_setting = 0;
+	
+	tc_restart(&TCC1);
 }
 	
 /**
@@ -382,9 +385,6 @@ int main (void)
 	left_set_wheel_speed(0);
 	right_set_wheel_speed(0);
 	
-	//wdt_set_timeout_period(WDT_TIMEOUT_PERIOD_250CLK);
-	//wdt_enable(); //enable watchdog
-	
 	ioport_set_pin_low(LED3_GPIO);
 	
 	f_rx_state = idle;
@@ -441,19 +441,6 @@ int main (void)
 				
 			case after_message:
 				printf("After Message.\n\r");
-				// Reset watchdog here.
-				// Update commands here.
-				/*
-				left_speed_setting = calculate_left_wheel_speed(linear_speed_setting, 
-																angular_speed_setting);
-				right_speed_setting = calculate_right_wheel_speed(linear_speed_setting,
-																angular_speed_setting);
-				left_set_wheel_speed(left_speed_setting);
-				right_set_wheel_speed(right_speed_setting);
-				*/
-								
-				//rampUp(f_linear_speed_setting, new_linear_speed_setting, f_angular_speed_setting, new_angular_speed_setting);
-				//rampDown(f_linear_speed_setting, new_linear_speed_setting, f_angular_speed_setting, new_angular_speed_setting);
 				
 				setSpeed(f_linear_speed_setting, f_angular_speed_setting);
 				f_rx_state = idle;
@@ -471,26 +458,6 @@ int main (void)
 					f_rx_state = receiving;
 				}		
 				wdt_reset();		
-				/*
-			case stop:
-				tc_disable(&TCC1);
-				rampDown(linear_speed_setting);
-				gpio_toggle_pin(LED1_GPIO);
-				rx_state = idle;
-				tc_enable(&TCC1);
-				*/
 		}
-		/*
-		if (time_out)
-		{
-			printf("TIMEOUT\n\r"); // Confirm in receive mode
-			tc_disable(&TCC1);
-			rampDown(linear_speed_setting);
-			gpio_toggle_pin(LED1_GPIO);
-			f_rx_state = idle;
-			time_out = false;
-			tc_enable(&TCC1);
-		}
-		*/
 	}
 }
