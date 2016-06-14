@@ -237,61 +237,19 @@ void setSpeed(int16_t linear_speed_setting, int16_t angular_speed_setting)
 	right_set_wheel_speed(right_speed_setting);
 }
 
-void rampDown(int16_t curr_lin_spd, int16_t new_lin_spd,
-			int16_t curr_ang_spd, int16_t new_ang_spd)
-{	
-	while (new_lin_spd < (curr_lin_spd - 5) || new_ang_spd < (curr_ang_spd - 5))
-	{
-		if (new_lin_spd < curr_lin_spd)
-		{
-			curr_lin_spd -= 3;
-		}
-		if (new_ang_spd < curr_ang_spd)
-		{
-			curr_ang_spd -= 3;
-		}
-		setSpeed(curr_lin_spd,curr_ang_spd);
-		delay_ms(250);
-		tc_restart(&TCC1);
-	}
-	setSpeed(new_lin_spd,new_ang_spd);
-}
-
-void rampUp(int16_t curr_lin_spd, int16_t new_lin_spd, 
-			int16_t curr_ang_spd, int16_t new_ang_spd)
-{
-	
-	while (new_lin_spd > (curr_lin_spd + 5) || new_ang_spd > (curr_ang_spd + 5))
-	{
-		gpio_toggle_pin(LED2_GPIO);
-		delay_ms(100);
-		
-		if (new_lin_spd > (curr_lin_spd + 5))
-		{
-			curr_lin_spd += 3;
-		}
-		if (new_ang_spd > (curr_ang_spd + 5))
-		{
-			curr_ang_spd += 3;
-		}
-		setSpeed(curr_lin_spd,curr_ang_spd);
-		tc_restart(&TCC1);
-	}
-	setSpeed(new_lin_spd,new_ang_spd);
-}
-
 /**
  * \brief Timer Counter Overflow interrupt callback function
  *
  * This function is called when an overflow interrupt has occurred on
  * TCC1 and toggles LED0.
+ *
+ * Intention: To bring the motors to a halt when the interrupt is triggered.
+ * TODO: The motors will not stop completely.
  */
 static void ovf_interrupt_callback(void)
 {
 	gpio_toggle_pin(LED0_GPIO);
 	f_rx_state = idle;
-	//time_out = true;
-	//rampDown(f_linear_speed_setting,0,f_angular_speed_setting,0);
 	
 	// Ramp down
 	while (0 < (f_linear_speed_setting - 3) || 0 < (f_angular_speed_setting - 3))
@@ -305,10 +263,16 @@ static void ovf_interrupt_callback(void)
 			f_angular_speed_setting -= 5;
 		}
 		setSpeed(f_linear_speed_setting,f_angular_speed_setting);
-		delay_ms(100);
-		
+		delay_ms(50);
 	}
 	setSpeed(0,0);
+	/**
+	* Consider replacing setSpeed(0,0); with the lines below, to guarantee that
+	* the wheels will stop. 
+	* TCC0.CCB = 0;
+	* TCC0.CCA = 0;
+	*/
+	
 	
 	f_linear_speed_setting = 0;
 	f_angular_speed_setting = 0;
